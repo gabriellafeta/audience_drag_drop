@@ -12,51 +12,46 @@ data = {
 }
 df = pd.DataFrame(data)
 
-# Sidebar for dynamic filtering
-st.sidebar.header("Dynamic Filtering")
-selected_feature = st.sidebar.selectbox("Select Feature to Filter", options=df.columns)
+# Sidebar for multiple filters
+st.sidebar.header("Define Filter Combinations")
 
-# Allow user to pick values for the selected feature
-if selected_feature:
-    unique_values = df[selected_feature].unique()
-    selected_values = st.sidebar.multiselect(f"Select values for {selected_feature}", unique_values)
+# Number of filter combinations
+num_filters = st.sidebar.number_input("How many filter combinations?", min_value=1, step=1, value=1)
 
-# Filter data based on user input
-filtered_dataframes = {}
-if selected_values:
-    for value in selected_values:
-        filtered_df = df[df[selected_feature] == value]
-        filtered_dataframes[value] = filtered_df
+# Collect filter criteria for each combination
+filter_combinations = []
+for i in range(num_filters):
+    st.sidebar.write(f"Filter Combination {i+1}")
+    filters = {}
+    selected_features = st.sidebar.multiselect(f"Select Features for Combination {i+1}", options=df.columns, key=f"features_{i}")
+    for feature in selected_features:
+        unique_values = df[feature].unique()
+        selected_values = st.sidebar.multiselect(f"Select values for {feature} in Combination {i+1}", unique_values, key=f"values_{i}_{feature}")
+        if selected_values:
+            filters[feature] = selected_values
+    if filters:
+        file_name = st.sidebar.text_input(f"File name for Combination {i+1}", f"filtered_data_{i+1}.csv")
+        filter_combinations.append((filters, file_name))
 
-# Let users specify file names for each filtered dataset
-file_names = {}
-if filtered_dataframes:
-    st.sidebar.header("File Names")
-    for value in filtered_dataframes.keys():
-        file_name = st.sidebar.text_input(f"File name for {value} data", f"{value}_stores.csv")
-        file_names[value] = file_name
-
-# Display filtered datasets
-st.write("Filtered Data:")
-for value, filtered_df in filtered_dataframes.items():
-    st.write(f"**{value} Stores:**")
-    st.dataframe(filtered_df)
-
-# Save filtered datasets as CSV in memory with user-defined file names
+# Apply filters and create files
 zip_buffer = io.BytesIO()
 with zipfile.ZipFile(zip_buffer, "w") as zf:
-    for value, filtered_df in filtered_dataframes.items():
-        csv_buffer = io.StringIO()
-        filtered_df.to_csv(csv_buffer, index=False)
-        # Use the user-defined file name
-        zf.writestr(file_names[value], csv_buffer.getvalue())
+    for filters, file_name in filter_combinations:
+        filtered_df = df.copy()
+        for feature, values in filters.items():
+            filtered_df = filtered_df[filtered_df[feature].isin(values)]
+        
+        if not filtered_df.empty:
+            csv_buffer = io.StringIO()
+            filtered_df.to_csv(csv_buffer, index=False)
+            zf.writestr(file_name, csv_buffer.getvalue())
 
 zip_buffer.seek(0)
 
-# Download button for ZIP file
-if filtered_dataframes:
+# Download ZIP file
+if filter_combinations:
     st.download_button(
-        label="Download Filtered Data as ZIP",
+        label="Download All Filtered Data as ZIP",
         data=zip_buffer,
         file_name="filtered_data.zip",
         mime="application/zip"
