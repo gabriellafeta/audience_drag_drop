@@ -44,16 +44,25 @@ zip_buffer = io.BytesIO()
 with zipfile.ZipFile(zip_buffer, "w") as zf:
     for filters, file_name in filter_combinations:
         filtered_df = df.copy()
+        
+        # Apply each filter
         for feature, values in filters.items():
             if isinstance(values, list):  # For categorical filters
                 filtered_df = filtered_df[filtered_df[feature].isin(values)]
             elif isinstance(values, tuple):  # For numeric filters
                 filtered_df = filtered_df[(filtered_df[feature] >= values[0]) & (filtered_df[feature] <= values[1])]
         
+        # Debug output: Show the filtered dataset for verification
+        st.write(f"Filter Combination: {filters}, File Name: {file_name}")
+        st.write(filtered_df)
+
+        # Only add non-empty datasets to the ZIP file
         if not filtered_df.empty:
             csv_buffer = io.StringIO()
             filtered_df.to_csv(csv_buffer, index=False)
             zf.writestr(file_name, csv_buffer.getvalue())
+        else:
+            st.write(f"Skipping empty dataset for file: {file_name}")
 
 zip_buffer.seek(0)
 
