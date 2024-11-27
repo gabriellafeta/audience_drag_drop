@@ -38,6 +38,10 @@ st.sidebar.header("Input SKU Codes")
 typed_skus = st.sidebar.text_input("Type SKU codes (comma-separated)")
 sku_list = [sku.strip() for sku in typed_skus.split(",")] if typed_skus else []
 
+st.sidebar.header("Input SKU Codes")
+typed_skus = st.sidebar.text_input("Type SKU codes (comma-separated)")
+sku_list = [sku.strip() for sku in typed_skus.split(",")] if typed_skus else []
+
 # Segmentation column
 segmentation_column = 'Segmentation'
 
@@ -48,7 +52,7 @@ if sku_list:
         for sku in sku_list:
             for segment in df[segmentation_column].unique():
                 # Filter dataset for the current SKU and segment
-                filtered_df = df[(df['SKU'] == sku) & (df[segmentation_column] == segment)]
+                filtered_df = df[(df['sku'] == sku) & (df[segmentation_column] == segment)]
                 
                 # Debug output: Show the filtered dataset for verification
                 st.write(f"SKU: {sku}, Segmentation: {segment}")
