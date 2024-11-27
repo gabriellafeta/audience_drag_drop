@@ -38,10 +38,6 @@ st.sidebar.header("Input SKU Codes")
 typed_skus = st.sidebar.text_input("Type SKU codes (comma-separated)")
 sku_list = [sku.strip() for sku in typed_skus.split(",")] if typed_skus else []
 
-st.sidebar.header("Input SKU Codes")
-typed_skus = st.sidebar.text_input("Type SKU codes (comma-separated)")
-sku_list = [sku.strip() for sku in typed_skus.split(",")] if typed_skus else []
-
 # Segmentation column
 segmentation_column = 'Segmentation'
 
@@ -55,13 +51,13 @@ if sku_list:
                 filtered_df = df[(df['sku'] == sku) & (df[segmentation_column] == segment)]
                 
                 # Debug output: Show the filtered dataset for verification
-                st.write(f"SKU: {sku}, Segmentation: {segment}")
+                st.write(f"sku: {sku}, Segmentation: {segment}")
                 st.write(filtered_df)
                 
                 # Only add non-empty datasets to the ZIP file
                 if not filtered_df.empty:
                     csv_buffer = io.StringIO()
-                    file_name = f"filtered_data_{sku}_{segment}.csv"
+                    file_name = f"{sku}_{segment}.csv"
                     filtered_df.to_csv(csv_buffer, index=False)
                     zf.writestr(file_name, csv_buffer.getvalue())
                 else:
