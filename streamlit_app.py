@@ -2,16 +2,36 @@ import streamlit as st
 import pandas as pd
 import io
 import zipfile
+import pandas as pd
+import streamlit as st
+from azure.storage.blob import BlobServiceClient, BlobClient
+from azure.core.exceptions import ResourceExistsError
+from io import StringIO
+import os
+import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+from datetime import datetime
 
-# Example dataset
-data = {
-    'SKU': ['S1', 'S2', 'S3', 'S4', 'S5', 'S1', 'S2', 'S3', 'S4', 'S5'],
-    'Type': ['Big', 'Small', 'Big', 'Small', 'Big', 'Big', 'Small', 'Big', 'Small', 'Big'],
-    'Location': ['North', 'South', 'East', 'West', 'North', 'North', 'South', 'East', 'West', 'North'],
-    'Segmentation': ['Segment1', 'Segment2', 'Segment1', 'Segment2', 'Segment3', 'Segment2', 'Segment3', 'Segment2', 'Segment1', 'Segment3'],
-    'Sales': [1000, 500, 1200, 400, 1100, 900, 600, 1300, 450, 1150]
-}
-df = pd.DataFrame(data)
+
+
+connection_string = "DefaultEndpointsProtocol=https;AccountName=beesexpansion0001;AccountKey=QBAsqeUnSwNe7hKHJwWrKfH1XE0LpERqc/N/x5jg51pKCvoOgaZw0NvIgxKwyciZ2JxnnjdBbu0b+ASt9jRAaA==;EndpointSuffix=core.windows.net"
+
+if connection_string is None:
+    raise Exception("Environment variable AZURE_STORAGE_CONNECTION_STRING is not set.")
+
+blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+
+container_name = 'expansionbees0001'
+container_client = blob_service_client.get_container_client(container_name)
+
+blob_name = 'audiences_pd.csv'
+blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+blob_content = blob_client.download_blob().content_as_text()
+audiences_pd = StringIO(blob_content)
+audiences_pd_df = pd.read_csv(audiences_pd)
+
+df = pd.DataFrame(audiences_pd_df)
 
 # Sidebar for SKU input
 st.sidebar.header("Input SKU Codes")
