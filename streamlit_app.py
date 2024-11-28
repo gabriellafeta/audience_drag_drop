@@ -29,7 +29,7 @@ sku_list = [sku.strip() for sku in typed_skus.split(",")] if typed_skus else []
 # Column selection dropdown
 column_to_output = st.sidebar.selectbox(
     "Select the column combination to include in output files",
-    ["poc_id", "vendor_account_id"]
+    ["poc_id", "bees_account_id"]
 )
 
 # Segmentation column
@@ -50,9 +50,9 @@ if sku_list:
                 
                 # Define columns to include based on selection
                 if column_to_output == "poc_id":
-                    columns_to_include = ['poc_id']
-                elif column_to_output == "vendor_account_id":
-                    columns_to_include = ['vendor_account_id', 'user_id']
+                    columns_to_include = ['poc_id', 'user_id']
+                elif column_to_output == "bees_account_id":
+                    columns_to_include = ['bees_account_id']
                 
                 # Filter columns for the output
                 filtered_column_df = filtered_df[columns_to_include] if not filtered_df.empty else pd.DataFrame()
