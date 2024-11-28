@@ -28,8 +28,8 @@ sku_list = [sku.strip() for sku in typed_skus.split(",")] if typed_skus else []
 
 # Column selection dropdown
 column_to_output = st.sidebar.selectbox(
-    "Select the column to include in output files",
-    ["poc_id", "bees_account_id"]
+    "Select the column combination to include in output files",
+    ["poc_id", "vendor_account_id"]
 )
 
 # Segmentation column
@@ -48,8 +48,14 @@ if sku_list:
                 st.write(f"sku: {sku}, Segmentation: {segment}")
                 st.write(filtered_df)
                 
-                # Extract only the selected column
-                filtered_column_df = filtered_df[[column_to_output]] if not filtered_df.empty else pd.DataFrame()
+                # Define columns to include based on selection
+                if column_to_output == "poc_id":
+                    columns_to_include = ['poc_id']
+                elif column_to_output == "vendor_account_id":
+                    columns_to_include = ['vendor_account_id', 'user_id']
+                
+                # Filter columns for the output
+                filtered_column_df = filtered_df[columns_to_include] if not filtered_df.empty else pd.DataFrame()
 
                 # Only add non-empty datasets to the ZIP file
                 if not filtered_column_df.empty:
